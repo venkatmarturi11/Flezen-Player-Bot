@@ -26,7 +26,8 @@ export default function ResultPage({ result, onBack }) {
           src={result.playbackUrl}
           poster={result.thumbnail}
           title={result.title}
-          fallbackUrl={result.intentUrl || result.openUrl}
+          openUrl={result.openUrl}
+          intentUrl={result.intentUrl}
         />
       ) : isVideo ? (
         <div className="player-frame placeholder-frame" onClick={() => openExternal(result.intentUrl || result.openUrl)} role="button" tabIndex={0}>

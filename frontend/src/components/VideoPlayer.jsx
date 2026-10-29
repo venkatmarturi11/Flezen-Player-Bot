@@ -4,11 +4,15 @@ import { openExternal } from '../services/telegram.js';
 /**
  * HTML5 video player with loading indicator, fallback action and fullscreen.
  */
-export default function VideoPlayer({ src, poster, title, fallbackUrl }) {
+export default function VideoPlayer({ src, poster, title, openUrl, intentUrl, fallbackUrl }) {
   const ref = useRef(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [playing, setPlaying] = useState(false);
+
+  const isAndroid = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
+  const targetUrl = isAndroid ? (intentUrl || fallbackUrl || openUrl) : (openUrl || fallbackUrl);
+  const buttonLabel = isAndroid ? '▶ Open in Flezen App to Play' : '▶ Open Flezen Stream Player';
 
   const toggle = () => {
     const v = ref.current;
@@ -49,13 +53,13 @@ export default function VideoPlayer({ src, poster, title, fallbackUrl }) {
       {error ? (
         <div style={{ marginTop: '0.75rem', textAlign: 'center' }}>
           <p className="error" role="alert" style={{ marginBottom: '0.75rem' }}>{error}</p>
-          {fallbackUrl && (
+          {targetUrl && (
             <button
               type="button"
               className="btn-primary"
-              onClick={() => openExternal(fallbackUrl)}
+              onClick={() => openExternal(targetUrl)}
             >
-              ▶ Open in Flezen App to Play
+              {buttonLabel}
             </button>
           )}
         </div>

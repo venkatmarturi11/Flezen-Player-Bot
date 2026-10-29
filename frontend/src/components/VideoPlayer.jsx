@@ -51,13 +51,20 @@ export default function VideoPlayer({ src, poster, title, openUrl, intentUrl, fa
 
   return (
     <div className="player">
-      <div className="player-frame">
+      <div
+        className="player-frame"
+        style={error ? { cursor: 'pointer', position: 'relative' } : { position: 'relative' }}
+        onClick={error && targetUrl ? () => openExternal(targetUrl) : undefined}
+        role={error ? 'button' : undefined}
+        tabIndex={error ? 0 : undefined}
+        aria-label={error ? 'Stream video in Flezen' : undefined}
+      >
         <video
           ref={ref}
           src={src}
           poster={poster || undefined}
           title={title}
-          controls
+          controls={!error}
           playsInline
           preload="metadata"
           onLoadedMetadata={() => setLoading(false)}
@@ -70,6 +77,46 @@ export default function VideoPlayer({ src, poster, title, openUrl, intentUrl, fa
             setError('This video could not be played directly. Open in Flezen player to stream.');
           }}
         />
+        {error && (
+          <div
+            className="player-error-overlay"
+            style={{
+              position: 'absolute',
+              inset: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'rgba(15, 23, 42, 0.75)',
+              backdropFilter: 'blur(4px)',
+              color: '#fff',
+              padding: '1rem',
+              textAlign: 'center',
+              borderRadius: '12px',
+            }}
+          >
+            <div
+              style={{
+                width: '60px',
+                height: '60px',
+                borderRadius: '50%',
+                background: '#8b5cf6',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '26px',
+                marginBottom: '0.6rem',
+                boxShadow: '0 4px 16px rgba(139, 92, 246, 0.6)',
+              }}
+            >
+              ▶
+            </div>
+            <strong style={{ fontSize: '1rem', letterSpacing: '0.02em' }}>Tap to Stream</strong>
+            <span style={{ fontSize: '0.8rem', opacity: 0.85, marginTop: '2px' }}>
+              {isAndroid ? 'Launches Flezen Player App' : 'Opens Flezen Stream Player'}
+            </span>
+          </div>
+        )}
         {loading && !error && <div className="spinner" role="status" aria-label="Loading video" />}
       </div>
       {error ? (

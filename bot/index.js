@@ -10,7 +10,7 @@ dotenv.config();
 
 let created;
 try {
-  created = createBot({ token: process.env.BOT_TOKEN, webAppUrl: process.env.WEB_APP_URL });
+  created = createBot({ token: process.env.BOT_TOKEN, webAppUrl: process.env.WEB_APP_URL || process.env.RENDER_EXTERNAL_URL });
 } catch (err) {
   console.error(`Cannot start bot: ${err.message}`);
   process.exit(1);

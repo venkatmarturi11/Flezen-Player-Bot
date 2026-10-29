@@ -1,0 +1,176 @@
+FLEZEN TELEGRAM MINI APP - WHAT TO DO NEXT
+==========================================
+
+Where things stand
+------------------
+DONE and tested (offline):
+  - Bot (Telegraf): /start, welcome text, "Open Flezen" Web App button
+  - Backend (Express): /api/resolve, /api/health, URL safety checks, rate limiting,
+    Telegram initData validation
+  - Frontend (React + Vite): home screen, result screen, Telegram integration
+  - Tests: bot 4, backend 25, frontend 10 (all passing)
+
+NOT yet done / NOT yet verified:
+  - README.md (full beginner guide) - still to be written
+  - Testing inside a real Telegram app on your phone
+  - Resolving a real Flezen link from the live site (my build sandbox could not
+    reach flezen.com)
+  - Video playback and downloading (see STEP 9 - this needs Flezen's help)
+
+
+STEP 1 - Install the tools
+--------------------------
+You need Node.js 20 or newer (check with:  node -v). Download from nodejs.org.
+
+In a terminal, inside the flezen-telegram-player folder, run:
+
+    npm run install:all
+
+
+STEP 2 - Create your bot and get the token
+------------------------------------------
+1. Open Telegram and search for  @BotFather  (the official one, blue tick).
+2. Send  /newbot  and follow the questions (a display name, then a username
+   that ends in "bot").
+3. BotFather replies with a TOKEN that looks like  123456789:AAExxxxxxxxxxxx
+4. Keep it secret. Anyone with it controls your bot. If it leaks, send
+   /revoke to BotFather to get a new one.
+
+
+STEP 3 - Create your .env file
+------------------------------
+1. Copy the file  .env.example  and name the copy  .env   (same folder).
+2. Open .env and fill in:
+
+    BOT_TOKEN=<the token from Step 2>
+    WEB_APP_URL=<your public https address - you get it in Step 5 or 6>
+    PORT=3000
+    REQUIRE_TELEGRAM_AUTH=false     (set to true once everything works)
+
+Never share or upload the .env file.
+
+
+STEP 4 - Check it works on your computer
+----------------------------------------
+Run all the tests:
+
+    npm test
+
+Then build the app and start the backend (it also serves the Mini App):
+
+    npm run build:frontend
+    npm start
+
+Open  http://localhost:3000  in your browser. You should see "Flezen
+Downloader". A yellow "development mode" note is normal outside Telegram.
+
+IMPORTANT CHECK - try your real example link:
+Paste  https://flezen.com/s/dbhbi0hbjlnl41j838sg4d2mc4ez1bq  into the app.
+  - If you see the file name, size 13 MB, type video  -> metadata works.
+  - If you see "did not contain recognizable file information" -> Flezen's
+    page layout differs from what I could see. Tell me, and paste the output of:
+        curl -s https://flezen.com/s/dbhbi0hbjlnl41j838sg4d2mc4ez1bq | head -c 6000
+    and I will adjust the parser.
+
+
+STEP 5 - Quick phone test (temporary public address)
+----------------------------------------------------
+Telegram only opens Mini Apps from https:// addresses, so localhost will not
+work on your phone. For a quick test use a tunnel while Step 4's server runs:
+
+    npx cloudflared tunnel --url http://localhost:3000
+
+(or use ngrok:  ngrok http 3000)
+
+It prints an address like  https://something.trycloudflare.com
+Put that in .env as WEB_APP_URL, then in a second terminal start the bot:
+
+    npm run start:bot
+
+On your phone: open your bot in Telegram -> send /start -> tap
+"Open Flezen". The Mini App should open inside Telegram.
+The tunnel address changes every time you restart it, so update WEB_APP_URL
+and restart the bot when that happens.
+
+
+STEP 6 - Real hosting (so it runs all the time)
+-----------------------------------------------
+Use any host that gives you HTTPS automatically (Render, Railway, Fly.io,
+a VPS with Caddy/nginx, etc.). You need TWO running processes:
+
+  Web service (backend + Mini App)
+    Build command:   npm run install:all && npm run build:frontend
+    Start command:   npm start
+
+  Worker (the bot)
+    Start command:   npm run start:bot
+
+Set these environment variables on the host (same names as .env):
+    BOT_TOKEN, WEB_APP_URL (the service's https address), PORT (if required),
+    ALLOWED_HOSTS=flezen.com,www.flezen.com, REQUIRE_TELEGRAM_AUTH=true
+
+Note: free plans often put services to sleep. The bot must stay awake to
+answer /start, so use a plan that keeps the worker running.
+
+After deploying, set WEB_APP_URL to the final address and restart the bot.
+
+
+STEP 7 - Turn on Telegram identity checks
+-----------------------------------------
+Once the app works inside Telegram, set REQUIRE_TELEGRAM_AUTH=true on the
+backend and redeploy. The backend will then reject requests that did not come
+from a genuine Telegram Mini App session. (It will no longer work in a normal
+browser, which is expected.)
+
+
+STEP 8 - Go through this phone checklist
+----------------------------------------
+[ ] /start shows the welcome message and the "Open Flezen" button
+[ ] The button opens the Mini App inside Telegram
+[ ] Layout looks right, no sideways scrolling
+[ ] A wrong link (for example https://example.com/x) shows a clear error
+[ ] Your Flezen example link shows name, size and type
+[ ] Back button (Telegram's and the in-app one) returns to the main screen
+[ ] Turning airplane mode on and submitting shows a "could not reach server" message
+Tell me anything that looks off and I will fix it.
+
+
+STEP 9 - Playback and download (the part that needs Flezen)
+-----------------------------------------------------------
+Right now, for Flezen links the app shows file info and an "Open in Flezen"
+button. It does NOT play or download the video, on purpose:
+  - Flezen's share page only offers "Open in App" (Android app).
+  - I found no public API, embed player or direct video address from Flezen.
+  - Flezen's terms forbid bypassing their security measures, so I did not
+    scrape or guess hidden video addresses.
+
+To enable real playback/download, you need ONE of:
+  a) An official API or embeddable player from Flezen. Email Flezen support
+     (contact details are on flezen.com/contact) and ask whether they offer
+     API access for shared-file playback and download, with documentation
+     and an API key.
+  b) If you own or run Flezen, give me the API details (endpoints,
+     authentication, response format).
+
+When you have that, send it to me. Only one file changes:
+    backend/src/providers/flezen/FlezenProvider.js
+(getPlaybackSource and getDownloadSource). The frontend already has the video
+player and download button ready and will show them automatically.
+API keys go in .env / host settings, never in the frontend code.
+
+
+STEP 10 - Ask me for these when ready
+-------------------------------------
+  1. "Write the README"  (full beginner documentation)
+  2. Send your reference screenshot if you want the look matched more closely
+  3. Send the Flezen API details (Step 9) to enable playback/download
+
+
+Useful commands (run in the main folder)
+----------------------------------------
+    npm run install:all     install everything
+    npm test                run bot + backend tests
+    npm run build:frontend  build the Mini App
+    npm start               start backend (serves the Mini App)
+    npm run start:bot       start the Telegram bot
+    npm run dev:frontend    frontend with live reload (needs backend running)

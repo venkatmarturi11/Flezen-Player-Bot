@@ -1,0 +1,17 @@
+{
+  "name": "flezen-telegram-player",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Telegram bot + Mini App for Flezen shared-file links",
+  "type": "module",
+  "scripts": {
+    "install:all": "npm install && npm install --prefix backend && npm install --prefix frontend && npm install --prefix bot",
+    "dev:backend": "npm run dev --prefix backend",
+    "dev:frontend": "npm run dev --prefix frontend",
+    "dev:bot": "npm run dev --prefix bot",
+    "build:frontend": "npm run build --prefix frontend",
+    "start": "npm start --prefix backend",
+    "start:bot": "npm start --prefix bot",
+    "test": "npm test --prefix backend && npm test --prefix bot"
+  }
+}

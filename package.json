@@ -9,6 +9,7 @@
     "dev:backend": "npm run dev --prefix backend",
     "dev:frontend": "npm run dev --prefix frontend",
     "dev:bot": "npm run dev --prefix bot",
+    "build": "npm run build:frontend",
     "build:frontend": "npm run build --prefix frontend",
     "start": "node start.js",
     "start:backend": "npm start --prefix backend",

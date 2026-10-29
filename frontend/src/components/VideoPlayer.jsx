@@ -9,10 +9,32 @@ export default function VideoPlayer({ src, poster, title, openUrl, intentUrl, fa
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [playing, setPlaying] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const isAndroid = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
   const targetUrl = isAndroid ? (intentUrl || fallbackUrl || openUrl) : (openUrl || fallbackUrl);
   const buttonLabel = isAndroid ? '▶ Open in Flezen App to Play' : '▶ Open Flezen Stream Player';
+
+  const copyLink = async () => {
+    const link = openUrl || fallbackUrl || src;
+    if (!link) return;
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(link);
+      } else {
+        const input = document.createElement('input');
+        input.value = link;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        document.body.removeChild(input);
+      }
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // ignore
+    }
+  };
 
   const toggle = () => {
     const v = ref.current;
@@ -53,15 +75,24 @@ export default function VideoPlayer({ src, poster, title, openUrl, intentUrl, fa
       {error ? (
         <div style={{ marginTop: '0.75rem', textAlign: 'center' }}>
           <p className="error" role="alert" style={{ marginBottom: '0.75rem' }}>{error}</p>
-          {targetUrl && (
+          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+            {targetUrl && (
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={() => openExternal(targetUrl)}
+              >
+                {buttonLabel}
+              </button>
+            )}
             <button
               type="button"
-              className="btn-primary"
-              onClick={() => openExternal(targetUrl)}
+              className="btn-secondary"
+              onClick={copyLink}
             >
-              {buttonLabel}
+              {copied ? '✓ Copied!' : '📋 Copy Link'}
             </button>
-          )}
+          </div>
         </div>
       ) : (
         <div className="player-actions">

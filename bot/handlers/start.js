@@ -12,9 +12,21 @@ export const startHandler = (webAppUrl) => async (ctx) => {
 };
 
 /**
- * Any other text: users must paste links inside the Mini App, not in chat,
- * so just point them back at the button.
+ * Any other text: if a Flezen link is detected, provide an instant play button
+ * pointing directly to that video inside the Mini App, plus a direct link.
  */
 export const hintHandler = (webAppUrl) => async (ctx) => {
+  const text = (ctx.message?.text || '').trim();
+  const flezenMatch = text.match(/https?:\/\/(?:www\.)?flezen\.com\/s\/([A-Za-z0-9_-]+)/i);
+
+  if (flezenMatch) {
+    const playUrl = `${webAppUrl}?url=${encodeURIComponent(flezenMatch[0])}`;
+    const keyboard = Markup.inlineKeyboard([
+      [Markup.button.webApp('▶ Play Video in App', playUrl)],
+      [Markup.button.url('🌐 Open Flezen Link', flezenMatch[0])],
+    ]);
+    return ctx.reply(HINT_TEXT, keyboard);
+  }
+
   await ctx.reply(HINT_TEXT, openKeyboard(webAppUrl));
 };

@@ -58,11 +58,28 @@ export function showBackButton(onClick) {
   };
 }
 
-/** Open an external page: Telegram's handler inside Telegram, a new tab otherwise. */
+/**
+ * Open an external page: Telegram's handler inside Telegram, a new tab otherwise.
+ * Telegram only accepts http:// and https:// URLs; converts intent:// or custom schemes safely.
+ */
 export function openExternal(url) {
+  if (!url) return;
+  let safeUrl = url;
+  if (url.startsWith('intent://') || url.startsWith('flezen://')) {
+    const match = url.match(/(?:intent:\/\/|flezen:\/\/)(flezen\.com\/s\/[A-Za-z0-9_-]+)/i);
+    safeUrl = match ? `https://${match[1]}` : url;
+  }
+
   const app = tg();
-  if (app?.openLink) app.openLink(url);
-  else window.open(url, '_blank', 'noopener,noreferrer');
+  if (app?.openLink) {
+    try {
+      app.openLink(safeUrl);
+      return;
+    } catch {
+      /* fallback to window.open */
+    }
+  }
+  window.open(safeUrl, '_blank', 'noopener,noreferrer');
 }
 
 export function haptic(kind = 'light') {

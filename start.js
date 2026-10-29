@@ -1,8 +1,19 @@
-import { spawn } from 'node:child_process';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { spawn, spawnSync } from 'node:child_process';
 
-console.log('Starting Flezen Web App & Backend...');
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const distPath = path.join(__dirname, 'frontend', 'dist', 'index.html');
 const isWin = process.platform === 'win32';
 const npmCmd = isWin ? 'npm.cmd' : 'npm';
+
+if (!fs.existsSync(distPath)) {
+  console.log('Frontend dist not found. Building frontend...');
+  spawnSync(npmCmd, ['run', 'build:frontend'], { stdio: 'inherit', env: process.env });
+}
+
+console.log('Starting Flezen Web App & Backend...');
 
 const backend = spawn(npmCmd, ['start', '--prefix', 'backend'], {
   stdio: 'inherit',
